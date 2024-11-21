@@ -1,3 +1,4 @@
+// Project made by Tredis, and Sukhman!
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
@@ -25,23 +26,23 @@ int main()
     cover.setCharacterSize(72); // Font size 
     cover.setFillColor(Color::Red); // Text color
     cover.setStyle(Text::Bold); // Bold 
-    cover.setPosition(200, 200); 
+    cover.setPosition(200, 200);
 
     // Set up "Triangle" button
     Text triangleButton;
     triangleButton.setFont(font);
-    triangleButton.setString("Triangle"); 
-    triangleButton.setCharacterSize(48); 
-    triangleButton.setFillColor(Color::Green); 
+    triangleButton.setString("Triangle");
+    triangleButton.setCharacterSize(48);
+    triangleButton.setFillColor(Color::Green);
     triangleButton.setPosition(600, 400);
 
     // Set up "Pentagon" button
     Text pentagonButton;
     pentagonButton.setFont(font);
-    pentagonButton.setString("Pentagon"); 
-    pentagonButton.setCharacterSize(48); 
-    pentagonButton.setFillColor(Color::Blue); 
-    pentagonButton.setPosition(600, 500); 
+    pentagonButton.setString("Pentagon");
+    pentagonButton.setCharacterSize(48);
+    pentagonButton.setFillColor(Color::Blue);
+    pentagonButton.setPosition(600, 500);
 
     // Vectors to store vertices and points
     vector<Vector2f> vertices; // Stores the shape's vertices
@@ -57,7 +58,7 @@ int main()
         while (window.pollEvent(event))
         {
             if (event.type == Event::Closed) {
-                window.close(); 
+                window.close();
             }
 
             if (event.type == sf::Event::MouseButtonPressed) {
@@ -72,9 +73,6 @@ int main()
                     }
                     // Check if the "Pentagon" button is clicked
                     else if (pentagonButton.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y)) {
-                        //getGlobalBounds provides a rectangle defining the boundaries of the button
-                        //contains checks whether a user clicked on the button
-
                         sides = 5; // Set the shape to pentagon
                         shapeSelected = true;
                         vertices.clear();
@@ -109,19 +107,35 @@ int main()
         if (!points.empty()) {
             // Generate fractal points 
             int randomIndex = rand() % vertices.size(); // Randomly pick one of the vertices
-            Vector2f randomVertex = vertices[randomIndex]; //assigns the selected vertex (with its x and y values) to the randomVertex variable
-            Vector2f lastPoint = points.back(); // The last generated point/  provides the starting point for the next iteration
-            Vector2f midpoint((randomVertex.x + lastPoint.x) / 2, (randomVertex.y + lastPoint.y) / 2);
-            points.push_back(midpoint); // Add the new point to the fractal
+            Vector2f randomVertex = vertices[randomIndex];
+            Vector2f lastPoint = points.back(); // The last generated point
+
+            // Set the k value based on the shape
+            float k;
+            if (sides == 5) {
+                k = 0.618f; // Golden ratio's reciprocal for pentagon
+            }
+            else {
+                k = 0.5f; // Midpoint for triangle
+            }
+
+            // Calculate the new fractal point
+            Vector2f newPoint(
+                (1 - k) * lastPoint.x + k * randomVertex.x,
+                (1 - k) * lastPoint.y + k * randomVertex.y
+            );
+            points.push_back(newPoint); // Add the new point to the fractal
         }
 
         // Draw everything
         window.clear(); // Clear the screen before drawing
 
-        window.draw(cover);          // Draw  (instructions)
-        window.draw(triangleButton); // Draw the triangle button
-        window.draw(pentagonButton); // Draw the pentagon button
 
+        window.draw(cover);          // Draw  (instructions)
+        if (!points.size() && !shapeSelected) {
+            window.draw(triangleButton); // Draw the triangle button
+            window.draw(pentagonButton); // Draw the pentagon button
+        }
         // Draw the vertices for the chosen shape
         for (int i = 0; i < vertices.size(); i++) {
             RectangleShape rect(Vector2f(10, 10)); // Small square to represent vertices
@@ -132,9 +146,9 @@ int main()
 
         // Draw the fractal points
         for (int i = 0; i < points.size(); i++) {
-            RectangleShape rect(Vector2f(2, 2)); // fractal point is represented as a small rectangle with dimensions 2x2.
+            RectangleShape rect(Vector2f(2, 2)); // Small square to represent points
             rect.setPosition(points[i]);
-            rect.setFillColor(Color::White);
+            rect.setFillColor(Color::Red);
             window.draw(rect);
         }
 
